@@ -1,0 +1,43 @@
+name: terraform-ci
+
+# plan sur chaque pull request, apply après fusion sur main. Aucun secret : OIDC.
+on:
+  pull_request:
+    paths: ["ci/**"]
+  push:
+    branches: [main]
+    paths: ["ci/**"]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ARM_USE_OIDC: "true"      # Terraform se connecte avec le jeton GitHub
+  ARM_USE_AZUREAD: "true"   # le backend lit le state avec l'identité, sans clé de stockage
+  ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+defaults:
+  run:
+    working-directory: ci
+
+jobs:
+  plan:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+      - run: terraform init
+      - run: terraform plan
+
+  apply:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+      - run: terraform init
+      - run: terraform apply -auto-approve
