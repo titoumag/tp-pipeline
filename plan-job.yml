@@ -1,0 +1,19 @@
+# Pour aller plus loin : à ajouter sous "jobs:" dans .github/workflows/terraform-validate.yml.
+# Secrets du dépôt (Settings, Secrets and variables, Actions) fournis par le formateur :
+# ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_TENANT_ID, ARM_SUBSCRIPTION_ID.
+  plan:
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "~1.16"
+      - run: terraform init
+      # prenom et location arrivent par TF_VAR_prenom et TF_VAR_location, définis dans le env du workflow
+      - run: terraform plan -input=false

@@ -1,0 +1,36 @@
+name: terraform-validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      prenom:
+        description: Votre prénom, en minuscules et sans accent (préfixe du resource group)
+        required: true
+        type: string
+      location:
+        description: La région des ressources
+        required: true
+        type: choice
+        options:
+          - swedencentral
+        default: swedencentral
+
+# Les variables Terraform : saisies dans le formulaire si lancé à la main, sinon les variables du dépôt GitHub
+env:
+  TF_VAR_prenom: ${{ inputs.prenom || vars.PRENOM }}
+  TF_VAR_location: ${{ inputs.location || vars.LOCATION }}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "~1.16"
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false
+      - run: terraform validate                  # À COMPLÉTER : la commande qui vérifie la syntaxe
