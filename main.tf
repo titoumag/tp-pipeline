@@ -1,4 +1,4 @@
-locals {
+    locals {
   name_prefix = "${var.prenom}-${var.environment}"
 }
 
