@@ -7,5 +7,7 @@ resource "azurerm_resource_group" "main" {
   location = var.location
   tags = {
     "owner" = "titouan"
+    "tag2"  = "eee"
   }
 }
+
